@@ -1,0 +1,26 @@
+[project]
+name = "pymigrate-app"
+version = "0.1.0"
+description = "Server application for inventory transfer from a legacy ERP to Odoo"
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+    "aiomysql>=0.3.2",
+    "alembic>=1.19.1",
+    "anthropic>=1.0.0",
+    "apscheduler>=3.11.3",
+    "asyncpg>=0.31.0",
+    "cryptography>=48.0.0",
+    "fastapi>=0.141.1",
+    "jinja2>=3.1.6",
+    "playwright>=1.62.0",
+    "pydantic-settings>=2.15.0",
+    "requests>=2.34.2",
+    "sqlalchemy>=2.0.52",
+    "uvicorn>=0.52.4",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.1.1",
+]
