@@ -7,7 +7,7 @@ from starlette.exceptions import HTTPException
 from app import api
 from app.config.db import local_engine, remote_engine
 from app.config.settings import get_settings
-from app.core.handlers import http_exception_handler
+from app.core.handlers import generic_exception_handler, http_exception_handler
 
 
 settings = get_settings()
@@ -31,6 +31,7 @@ app.add_middleware(
 )
 app.include_router(api.router)
 app.add_exception_handler(HTTPException, http_exception_handler)
+app.add_exception_handler(Exception, generic_exception_handler)
 
 
 if __name__ == '__main__':

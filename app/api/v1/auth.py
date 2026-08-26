@@ -13,35 +13,41 @@ from app.services import auth
 
 router = APIRouter(prefix='/auth')
 
+
 @router.post('/login', response_model=ItemResponse[None])
-async def login(db: RequiresLocalDB, data: LoginRequest, client: RequiresClientInfo, response: Response): 
+async def login(db: RequiresLocalDB, data: LoginRequest, client: RequiresClientInfo, response: Response):
     settings = get_settings()
-    unauthorized = HTTPException(401, detail='Por favor, revise sus credenciales e intente de nuevo.')
+    unauthorized = HTTPException(
+        401, detail='Por favor, revise sus credenciales e intente de nuevo.')
     url = urljoin(settings.MMDPAWN_API_URL, 'loginUsuario')
-    res = await asyncio.to_thread(
-        requests.get,
-        url,
-        params={
-            'usuario': auth.mmdpawn_encrypt(data.username),
-            'clave': auth.mmdpawn_encrypt(data.password),
-        },
-        timeout=10
-    )
-    
+    try:
+        res = await asyncio.to_thread(
+            requests.get,
+            url,
+            params={
+                'usuario': auth.mmdpawn_encrypt(data.username),
+                'clave': auth.mmdpawn_encrypt(data.password),
+            },
+            timeout=10
+        )
+    except Exception as e:
+        raise RuntimeError('Ocurrió un error desconocido al solicitar información del usuario en MMD Pawn') from e
+        
+
     payload = ExternalAuth.model_validate(res.json())
 
     if not payload.can_continue():
         raise unauthorized
-    
+
     if isinstance(payload.datos, str):
         raise unauthorized
     ttl = int(auth.session_ttl(data.remember_me).total_seconds())
 
     pysessid = await auth.create_session(
-        db, 
-        payload, 
-        ip_address=client.ip_address, 
-        user_agent=client.user_agent, 
+        db,
+        payload,
+        ip_address=client.ip_address,
+        user_agent=client.user_agent,
         ttl=ttl
     )
 
@@ -57,6 +63,7 @@ async def login(db: RequiresLocalDB, data: LoginRequest, client: RequiresClientI
 
     return ItemResponse(message='Autenticación exitosa', data=None)
 
+
 @router.get('/session', response_model=ItemResponse[SimpleSession | None])
 async def get_session_info(db: RequiresLocalDB, pysessid: str = Cookie(default=None)):
     not_authenticated = ItemResponse(message='No autenticado', data=None)
@@ -66,6 +73,7 @@ async def get_session_info(db: RequiresLocalDB, pysessid: str = Cookie(default=N
     if session is None:
         return not_authenticated
     return ItemResponse(message='Autenticado.', data=SimpleSession.from_session(session))
+
 
 @router.post('/logout', response_model=ItemResponse[None])
 async def logout(db: RequiresLocalDB, response: Response, pysessid: str = Cookie(default=None)):

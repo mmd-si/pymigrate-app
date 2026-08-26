@@ -1,7 +1,7 @@
 from app.core.resolvers import procedural_resolver
 from sqlalchemy import Row
 from datetime import datetime
-from pydantic import BaseModel, computed_field
+from pydantic import BaseModel, Field, computed_field
 from app.models.local import ItemResult, JobStatus, Session, TransferJob, TransferJobError, TransferJobItem
 from app.models.remote import Branch
 
@@ -103,7 +103,7 @@ class InventoryDetails(BaseModel):
     brand: str | None
     model: str | None
     series: str | None
-    branch: str | None
+    raw_branch: str | None = Field(exclude=True)
 
     @computed_field  # type: ignore[prop-decorator]
     @property
@@ -139,9 +139,9 @@ class InventoryDetails(BaseModel):
 
     @computed_field  # type: ignore[prop-decorator]
     @property
-    def branch_name(self) -> str:
-        branch = self.branch
-        return '' if not branch else ' '.join(branch.replace('MASMEDAN', '').split())
+    def branch(self) -> str:
+        raw_branch = self.raw_branch
+        return '' if not raw_branch else ' '.join(raw_branch.replace('MASMEDAN', '').split())
 
     @classmethod
     def from_row(cls, row: Row) -> 'InventoryDetails':
@@ -168,7 +168,7 @@ class InventoryDetails(BaseModel):
             brand=row.brand,
             model=row.model,
             series=row.series,
-            branch=row.branch,
+            raw_branch=row.branch,
         )
 
 
@@ -222,7 +222,7 @@ class JobSummary(BaseModel):
 
     @classmethod
     def from_populated(cls, job: TransferJob) -> JobSummary:
-        error = job.errors.sort(key=lambda e: e.occurred_at, reverse=True) if job.errors else None
+        error = sorted(job.errors, key=lambda e: e.occurred_at, reverse=True)[0] if job.errors else None
         return cls(
             job_id = job.job_id,
             status = job.status,

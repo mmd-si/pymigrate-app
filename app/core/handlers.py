@@ -17,3 +17,11 @@ async def http_exception_handler(_: Request, exc: HTTPException) -> JSONResponse
     )
     flash.send(response, AppMessage.error(exc.detail).dict())
     return response
+
+
+async def generic_exception_handler(_: Request, exc: Exception) -> JSONResponse:
+    logger.exception(exc)
+    detail = 'Hubo un error inesperado.'
+    response = JSONResponse(status_code=500, content={'detail': detail})
+    flash.send(response, AppMessage.error(detail).dict())
+    return response

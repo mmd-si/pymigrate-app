@@ -31,16 +31,14 @@ async def create_session(
     session = Session(
         pysessid=crypto.sha256hash(pysessid),
         user_id=str(data.datos.login.idLogin),
+        first_name=data.datos.info.nombre,
+        last_name=data.datos.info.apellido,
         branch_id=int(data.datos.info.idSucursal),
         role_id=int(data.datos.info.idPerfil),
         ip_address=ip_address,
         user_agent=user_agent,
         created_at=now,
-        expires_at=now + timedelta(seconds=ttl),
-        data = {
-            'firstName': data.datos.info.nombre,
-            'lastName': data.datos.info.apellido
-        }  
+        expires_at=now + timedelta(seconds=ttl)
     )
     db.add(session)
     await db.flush()

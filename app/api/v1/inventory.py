@@ -1,11 +1,12 @@
 from fastapi import APIRouter, HTTPException
 from app.dependencies import RequiresRemoteDB, RequiresSession
 from app.schemas.internal import ItemResponse
+from app.schemas.response import InventoryDetails
 from app.services import inventory
 
 router = APIRouter(prefix='/inventory')
 
-@router.get('/{barcode}')
+@router.get('/{barcode}', response_model=ItemResponse[InventoryDetails])
 async def show(db: RequiresRemoteDB, current: RequiresSession, branch_id: int, barcode: str):
     if not current.is_branch_master() and not current.branch_id == branch_id:
         raise HTTPException(403, 'Lo sentimos. No está autorizado/a para acceder a esta información.')

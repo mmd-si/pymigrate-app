@@ -3,8 +3,22 @@ from app.config.settings import get_settings
 
 settings = get_settings()
 
-local_engine: AsyncEngine = create_async_engine(settings.local_db_url)
-remote_engine: AsyncEngine = create_async_engine(settings.remote_db_url)
+local_engine: AsyncEngine = create_async_engine(
+    settings.local_db_url,
+    future=True,
+    pool_pre_ping=True,
+    pool_size=10,
+    pool_timeout=30,
+    pool_recycle=1800,
+)
+remote_engine: AsyncEngine = create_async_engine(
+    settings.remote_db_url,
+    future=True,
+    pool_pre_ping=True,
+    pool_size=10,
+    pool_timeout=30,
+    pool_recycle=1800,
+)
 
 LocalSession = async_sessionmaker(local_engine, expire_on_commit=False)
 RemoteSession = async_sessionmaker(remote_engine, expire_on_commit=False)

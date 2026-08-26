@@ -3,22 +3,29 @@ from app.core.utils import clamp
 from app.dependencies import RequiresLocalDB, RequiresRemoteDB, RequiresSession
 from app.schemas.internal import ListResponse, ItemResponse
 from app.schemas.request import TransferRequest
+from app.schemas.response import DetailedJob, JobSummary
 from app.services import report, transfer
 
 
 router = APIRouter(prefix='/transfers')
 
 
-@router.get('/')
+@router.get('/', response_model=ListResponse[JobSummary])
 async def index(db: RequiresLocalDB, current: RequiresSession, limit: int = 20, offset: int = 0):
     limit = clamp(limit, 0, 100)
     offset = max(0, offset)
 
     jobs = await transfer.list_summary(db, current.user_id, limit, offset)
 
-    return ListResponse(message='Se encontraron las transferencias exitosamente', data=jobs)
+    message = (
+         'La lista de transferencias fue encontrada con éxito.'
+         if jobs else
+         'La operación fue realizada con éxito, pero no hay resultados que retornar.'
+    )
 
-@router.get('/{job_id}')
+    return ListResponse(message=message, data=jobs)
+
+@router.get('/{job_id}', response_model=ItemResponse[DetailedJob])
 async def show(lcl: RequiresLocalDB, rmt: RequiresRemoteDB, current: RequiresSession, job_id: str):
         job = await transfer.detailed(lcl, rmt, job_id, current.user_id)
         if job is None:
@@ -26,7 +33,7 @@ async def show(lcl: RequiresLocalDB, rmt: RequiresRemoteDB, current: RequiresSes
         return ItemResponse(message='La transferencia fue encontrada con éxito.', data=job)
 
 
-@router.post('/', status_code=202)
+@router.post('/', status_code=202, response_model=ItemResponse[str])
 async def create(lcl: RequiresLocalDB, rmt: RequiresRemoteDB, current: RequiresSession, data: TransferRequest):
     if not data.row_ids:
          raise HTTPException(400, 'Orden de trabajo vacía.')
@@ -38,7 +45,7 @@ async def create(lcl: RequiresLocalDB, rmt: RequiresRemoteDB, current: RequiresS
         data=job_id
     )
 
-@router.get('/{job_id}/pdf')
+@router.get('/{job_id}/pdf', response_model=None)
 async def export(lcl: RequiresLocalDB, rmt: RequiresRemoteDB, current: RequiresSession, job_id: str):
     job = await transfer.detailed(lcl, rmt, job_id, current.user_id)
     if job is None:
