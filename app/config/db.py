@@ -11,8 +11,7 @@ local_engine: AsyncEngine = create_async_engine(
     pool_timeout=30,
     pool_recycle=1800,
     connect_args={
-        'timeout': 5,
-        'command_timeout': 10
+        'connect_timeout': 5
     }
 )
 remote_engine: AsyncEngine = create_async_engine(
