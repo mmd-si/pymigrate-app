@@ -25,7 +25,10 @@ if config.config_file_name is not None:
 # database is a legacy ERP that this app reads from but does not own.
 target_metadata = LocalBase.metadata
 
-config.set_main_option("sqlalchemy.url", str(get_settings().local_db_url))
+config.set_main_option(
+    "sqlalchemy.url",
+    get_settings().local_db_url.render_as_string(hide_password=False),
+)
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:
