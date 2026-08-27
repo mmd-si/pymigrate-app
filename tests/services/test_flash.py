@@ -1,3 +1,4 @@
+import base64
 import http.cookies
 import json
 
@@ -5,6 +6,10 @@ from starlette.requests import Request
 from starlette.responses import Response
 
 from app.services import flash
+
+
+def _decode(raw: str):
+    return json.loads(base64.urlsafe_b64decode(raw.encode()))
 
 
 def _cookie_value(response: Response) -> str:
@@ -15,7 +20,7 @@ def _cookie_value(response: Response) -> str:
 
 def _request_with_cookie_from(response: Response) -> Request:
     # Reuse the exact Set-Cookie encoding flash.send produced, rather than
-    # hand-building a Cookie header (the JSON value needs cookie-spec quoting).
+    # hand-building a Cookie header.
     name_value = response.headers['set-cookie'].split(';', 1)[0]
     scope = {'type': 'http', 'headers': [(b'cookie', name_value.encode())]}
     return Request(scope)
@@ -33,7 +38,7 @@ def test_send_sets_cookie_with_expected_attributes_for_str_message():
     cookie.load(response.headers['set-cookie'])
     morsel = cookie['flash']
 
-    assert json.loads(morsel.value) == 'hello'
+    assert _decode(morsel.value) == 'hello'
     assert morsel['httponly'] is True
     assert morsel['secure'] is True
     assert morsel['samesite'] == 'none'
@@ -45,7 +50,7 @@ def test_send_sets_cookie_for_dict_message():
     response = Response()
     flash.send(response, {'type': 'error', 'message': 'boom'})
 
-    assert json.loads(_cookie_value(response)) == {'type': 'error', 'message': 'boom'}
+    assert _decode(_cookie_value(response)) == {'type': 'error', 'message': 'boom'}
 
 
 def test_read_returns_none_when_no_cookie_present():
