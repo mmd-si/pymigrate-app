@@ -21,12 +21,12 @@ async def test_health_both_dbs_ok_returns_success_message(app_client):
     assert body['message'] == 'Todos los sistemas operativos'
 
 
-async def test_health_local_db_failure_returns_local_warning_still_200(app_client):
+async def test_health_local_db_failure_returns_local_warning_503(app_client):
     app.dependency_overrides[get_local_db] = _failing_db
 
     response = await app_client.get('/api/health')
 
-    assert response.status_code == 200
+    assert response.status_code == 503
     assert response.json()['message'] == 'Base de datos local inaccesible'
 
 
@@ -35,7 +35,7 @@ async def test_health_remote_db_failure_returns_remote_warning(app_client):
 
     response = await app_client.get('/api/health')
 
-    assert response.status_code == 200
+    assert response.status_code == 503
     assert response.json()['message'] == 'Base de datos remota inaccesible'
 
 
@@ -45,4 +45,5 @@ async def test_health_both_failing_local_warning_takes_precedence(app_client):
 
     response = await app_client.get('/api/health')
 
+    assert response.status_code == 503
     assert response.json()['message'] == 'Base de datos local inaccesible'

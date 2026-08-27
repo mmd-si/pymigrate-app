@@ -19,7 +19,7 @@ async def login(db: RequiresLocalDB, data: LoginRequest, client: RequiresClientI
     settings = get_settings()
     unauthorized = HTTPException(
         401, detail='Por favor, revise sus credenciales e intente de nuevo.')
-    url = urljoin(settings.MMDPAWN_API_URL, 'loginUsuario')
+    url = urljoin(settings.mmdpawn_api_url, 'loginUsuario')
     try:
         res = await asyncio.to_thread(
             requests.get,

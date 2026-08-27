@@ -1,4 +1,4 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Response
 from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
 
@@ -9,7 +9,7 @@ from app.schemas.internal import AppMessage
 router = APIRouter(prefix='/api')
 
 @router.get('/health')
-async def health(lcl: RequiresLocalDB, rmt: RequiresRemoteDB):
+async def health(response: Response, lcl: RequiresLocalDB, rmt: RequiresRemoteDB):
     select_1 = text('SELECT 1')
     local_ok = True
     remote_ok = True
@@ -31,6 +31,8 @@ async def health(lcl: RequiresLocalDB, rmt: RequiresRemoteDB):
     else:
         message = AppMessage.success('Todos los sistemas operativos')
 
-    return { 'status': 200, **message.dict() }
+    response.status_code = 200 if local_ok and remote_ok else 503
+
+    return { 'status': response.status_code, **message.dict() }
 
 router.include_router(v1.router)
