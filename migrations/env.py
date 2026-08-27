@@ -23,7 +23,7 @@ settings = get_settings()
 config.set_main_option('sqlalchemy.url', str(settings.local_db_url))
 
 if settings.python_env == 'development':
-    print(settings.local_db_url.render_as_string(hide_password=False))
+    print(settings.local_db_url)
 
 def run_migrations_offline() -> None:
     """
