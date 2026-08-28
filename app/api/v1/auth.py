@@ -41,6 +41,7 @@ async def login(db: RequiresLocalDB, data: LoginRequest, client: RequiresClientI
 
     if isinstance(payload.datos, str):
         raise unauthorized
+
     ttl = int(auth.session_ttl(data.remember_me).total_seconds())
 
     pysessid = await auth.create_session(

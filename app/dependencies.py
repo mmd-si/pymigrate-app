@@ -11,6 +11,7 @@ from app.services import auth
 async def get_local_db() -> AsyncIterator[AsyncSession]:
     async with LocalSession() as session:
         yield session
+        await session.commit()
 
 RequiresLocalDB = Annotated[AsyncSession, Depends(get_local_db)]
 
