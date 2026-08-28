@@ -58,7 +58,7 @@ def make_session(**overrides) -> Session:
 
 
 def make_branch_row(**overrides) -> SimpleNamespace:
-    defaults = dict(id=1, name='Sucursal Uno')
+    defaults = dict(id=1, name='Sucursal Uno', acronym='SU1')
     defaults.update(overrides)
     return SimpleNamespace(**defaults)
 
