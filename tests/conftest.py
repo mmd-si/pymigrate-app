@@ -5,8 +5,8 @@ import os
 # the MMDPawn AES key from mmdpawn_encrypt_pw at import time) and app/main.py.
 # pytest imports conftest.py before collecting test modules in this tree, so
 # setting env vars here (module level, not inside a fixture) runs early enough.
-os.environ.setdefault('APP_HOST', '0.0.0.0')
-os.environ.setdefault('APP_PORT', '3000')
+os.environ.setdefault('HOST', '0.0.0.0')
+os.environ.setdefault('PORT', '3000')
 os.environ.setdefault('ACCESS_CONTROL_ALLOW_ORIGINS', '*')
 os.environ.setdefault('REMOTE_DB_DRIVER', 'mysql+aiomysql')
 os.environ.setdefault('REMOTE_DB_HOST', 'localhost')

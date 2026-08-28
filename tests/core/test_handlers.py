@@ -1,3 +1,4 @@
+import base64
 import http.cookies
 import json
 
@@ -10,7 +11,7 @@ from app.schemas.internal import AppMessage
 def _flash_value(response):
     cookie = http.cookies.SimpleCookie()
     cookie.load(response.headers['set-cookie'])
-    return json.loads(cookie['flash'].value)
+    return json.loads(base64.urlsafe_b64decode(cookie['flash'].value.encode()))
 
 
 async def test_http_exception_handler_returns_json_body_and_status():

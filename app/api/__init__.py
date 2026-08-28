@@ -1,10 +1,15 @@
-from fastapi import APIRouter, Response
+import logging
+
+from fastapi import APIRouter, Request, Response
 from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
 
 from app.api import v1
 from app.dependencies import RequiresLocalDB, RequiresRemoteDB
-from app.schemas.internal import AppMessage
+from app.schemas.internal import AppMessage, ItemResponse
+from app.services import flash
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix='/api')
 
@@ -25,14 +30,21 @@ async def health(response: Response, lcl: RequiresLocalDB, rmt: RequiresRemoteDB
         remote_ok = False
 
     if not local_ok:
-        message = AppMessage.warning('Base de datos local inaccesible')
+        msg = AppMessage.warning('Base de datos local inaccesible')
     elif not remote_ok:
-        message = AppMessage.warning('Base de datos remota inaccesible')
+        msg = AppMessage.warning('Base de datos remota inaccesible')
     else:
-        message = AppMessage.success('Todos los sistemas operativos')
+        msg = AppMessage.success('Todos los sistemas operativos')
 
     response.status_code = 200 if local_ok and remote_ok else 503
 
-    return { 'status': response.status_code, **message.dict() }
+    logger.info(msg.message)
+
+    return { 'status': response.status_code, **msg.dict() }
+
+@router.get('/flash', response_model=ItemResponse[AppMessage | None])
+async def get_flash(request: Request, response: Response):
+    data = flash.read(request, response)
+    return ItemResponse(message='', data=AppMessage(**data) if data else None)
 
 router.include_router(v1.router)

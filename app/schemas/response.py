@@ -32,14 +32,15 @@ class SimpleSession(BaseModel):
 class SimpleBranch(BaseModel):
     id: int
     name: str
+    acronym: str | None
 
     @classmethod
     def from_branch(cls, branch: Branch) -> 'SimpleBranch':
-        return SimpleBranch(id=branch.id, name=branch.nombreComercial)
+        return SimpleBranch(id=branch.id, name=branch.nombreComercial, acronym=branch.siglas)
 
     @classmethod
     def from_row(cls, row: Row) -> 'SimpleBranch':
-        return SimpleBranch(id=row.id, name=row.name)
+        return SimpleBranch(id=row.id, name=row.name, acronym=row.acronym)
 
 
 class DetailedError(BaseModel):

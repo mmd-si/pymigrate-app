@@ -8,7 +8,8 @@ GRUPO_SI = 3
 async def all(db: AsyncSession, limit: int, offset: int) -> list[SimpleBranch]:
     stmt = select(
         Branch.id.label('id'),
-        Branch.nombreComercial.label('name')
+        Branch.nombreComercial.label('name'),
+        Branch.siglas.label('acronym')
     ).where(Branch.grupo == GRUPO_SI).limit(limit).offset(offset).order_by(Branch.id)
 
     result = await db.execute(stmt)
@@ -18,7 +19,8 @@ async def all(db: AsyncSession, limit: int, offset: int) -> list[SimpleBranch]:
 async def by_id(db: AsyncSession, branch_id: int) -> SimpleBranch | None:
     stmt = select(
         Branch.id.label('id'),
-        Branch.nombreComercial.label('name')
+        Branch.nombreComercial.label('name'),
+        Branch.siglas.label('acronym')
     ).where(Branch.grupo == GRUPO_SI, Branch.id == branch_id)
 
     result = await db.execute(stmt)

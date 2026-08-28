@@ -58,7 +58,7 @@ async def login(db: RequiresLocalDB, data: LoginRequest, client: RequiresClientI
         path='/',
         httponly=True,
         secure=True,
-        samesite='lax'
+        samesite='none'
     )
 
     return ItemResponse(message='Autenticación exitosa', data=None)
@@ -79,5 +79,5 @@ async def get_session_info(db: RequiresLocalDB, pysessid: str = Cookie(default=N
 async def logout(db: RequiresLocalDB, response: Response, pysessid: str = Cookie(default=None)):
     if pysessid is not None:
         await auth.revoke_session(db, pysessid)
-    response.delete_cookie(key='pysessid', path='/')
+    response.delete_cookie(key='pysessid', path='/', secure=True, samesite='none')
     return ItemResponse(message='Sesión cerrada', data=None)

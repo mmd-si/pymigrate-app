@@ -10,8 +10,8 @@ class Settings(BaseSettings):
         case_sensitive=False
     )
 
-    app_host: str
-    app_port: int
+    host: str
+    port: int
 
     access_control_allow_origins: str
 
