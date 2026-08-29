@@ -8,6 +8,7 @@ from app.config.db import local_engine, remote_engine
 from app.config.settings import get_settings
 from app.core.handlers import generic_exception_handler, http_exception_handler
 from app.core.middleware import log_requests
+from app.core.scheduler import shutdown_scheduler, start_scheduler
 
 
 settings = get_settings()
@@ -15,7 +16,9 @@ settings = get_settings()
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
+    start_scheduler()
     yield
+    shutdown_scheduler()
     await local_engine.dispose()
     await remote_engine.dispose()
 

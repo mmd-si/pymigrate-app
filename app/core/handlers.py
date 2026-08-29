@@ -1,6 +1,7 @@
 import logging
 from fastapi import Request
 from fastapi.responses import JSONResponse
+from sqlalchemy.exc import DBAPIError
 from starlette.exceptions import HTTPException
 from app.schemas.internal import AppMessage
 from app.services import flash
@@ -20,7 +21,10 @@ async def http_exception_handler(_: Request, exc: HTTPException) -> JSONResponse
 
 
 async def generic_exception_handler(_: Request, exc: Exception) -> JSONResponse:
-    logger.exception(exc)
+    if isinstance(exc, (OSError, DBAPIError)):
+        logger.error('No se pudo conectar a la base de datos: %s', exc)
+    else:
+        logger.exception(exc)
     detail = 'Hubo un error inesperado.'
     response = JSONResponse(status_code=500, content={'detail': detail})
     flash.send(response, AppMessage.error(detail).dict())
