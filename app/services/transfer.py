@@ -21,6 +21,14 @@ async def create(
     return job.job_id
 
 
+async def get(lcl: AsyncSession, job_id: str, owner_id: str) -> TransferJob | None:
+    stmt = select(TransferJob).where(
+        TransferJob.job_id == job_id, TransferJob.owner_id == owner_id
+    )
+    result = await lcl.execute(stmt)
+    return result.scalar_one_or_none()
+
+
 async def list_summary(db: AsyncSession, owner_id: str, limit: int, offset: int) -> list[JobSummary]:
     stmt = (
         select(TransferJob)

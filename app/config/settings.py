@@ -32,6 +32,17 @@ class Settings(BaseSettings):
     mmdpawn_encrypt_pw: str
     mmdpawn_api_url: str
 
+    odoo_url: str
+    odoo_db: str
+    odoo_user: str
+    odoo_password: str
+    odoo_timeout: int
+
+    transfer_batch_limit: int = 10
+    transfer_max_tries: int = 3
+    transfer_poll_interval: int = 30
+    odoo_fake_barcodes: bool = False
+
     trust_proxy: bool
     python_env: str
     log_level: str

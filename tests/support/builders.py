@@ -112,6 +112,36 @@ def make_job_item(**overrides) -> TransferJobItem:
     return TransferJobItem(**defaults)
 
 
+def make_source_row(**overrides) -> SimpleNamespace:
+    """A raw ERP row shaped like ``app.services.inventory._stmt()`` output — the
+    input the transfer pipeline's ``Normalizer`` consumes. (Same shape as
+    ``make_inventory_row``; kept as a distinct name for intent.)"""
+    return make_inventory_row(**overrides)
+
+
+def make_odoo_context(**overrides):
+    """An ``OdooContext`` whose connection and every model wrapper are AsyncMocks.
+    Pass ``wrapper=...`` overrides or configure ``ctx.<wrapper>.<method>.return_value``.
+    """
+    from app.odoo import OdooContext
+
+    fields = dict(
+        connection=AsyncMock(),
+        product_template=AsyncMock(),
+        product_product=AsyncMock(),
+        product_category=AsyncMock(),
+        pos_category=AsyncMock(),
+        product_tag=AsyncMock(),
+        account_tax=AsyncMock(),
+        uom_uom=AsyncMock(),
+        stock_warehouse=AsyncMock(),
+        stock_picking=AsyncMock(),
+        stock_picking_type=AsyncMock(),
+    )
+    fields.update(overrides)
+    return OdooContext(**fields)
+
+
 def make_job_error(**overrides) -> TransferJobError:
     defaults = dict(
         error_id=str(uuid4()),
