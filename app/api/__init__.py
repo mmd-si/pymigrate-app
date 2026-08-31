@@ -54,7 +54,7 @@ async def health(response: Response, lcl: RequiresLocalDB, rmt: RequiresRemoteDB
     else:
         msg = AppMessage.success('Todos los sistemas operativos')
 
-    response.status_code = 200 if local_ok and remote_ok else 503
+    response.status_code = 200 if local_ok and remote_ok and mmdpawn_ok else 503
 
     logger.info(msg.message)
 

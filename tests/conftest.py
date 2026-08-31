@@ -35,7 +35,7 @@ os.environ.setdefault('TRUST_PROXY', 'False')
 os.environ.setdefault('PYTHON_ENV', 'development')
 os.environ.setdefault('LOG_LEVEL', 'info')
 
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 from httpx import ASGITransport, AsyncClient
@@ -56,6 +56,18 @@ async def _override_remote_db():
 
 def _override_client_info() -> ClientInfo:
     return ClientInfo(ip_address='127.0.0.1', user_agent='pytest')
+
+
+@pytest.fixture(autouse=True)
+def mock_mmdpawn_api(monkeypatch):
+    # The health check hits settings.mmdpawn_api_url over the real network
+    # (app/api/__init__.py); MMDPAWN_API_URL points at a non-resolving host
+    # in tests, so this call must be mocked like the DB dependencies are.
+    response = MagicMock()
+    response.raise_for_status.return_value = None
+    get = MagicMock(return_value=response)
+    monkeypatch.setattr('app.api.requests.get', get)
+    return get
 
 
 @pytest.fixture
