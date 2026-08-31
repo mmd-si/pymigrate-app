@@ -47,3 +47,12 @@ async def test_health_both_failing_local_warning_takes_precedence(app_client):
 
     assert response.status_code == 503
     assert response.json()['message'] == 'Base de datos local inaccesible'
+
+
+async def test_health_mmdpawn_failure_returns_mmdpawn_warning(app_client, mock_mmdpawn_api):
+    mock_mmdpawn_api.side_effect = ConnectionError('unreachable')
+
+    response = await app_client.get('/api/health')
+
+    assert response.status_code == 503
+    assert response.json()['message'] == 'API de MMD Pawn inaccesible'
