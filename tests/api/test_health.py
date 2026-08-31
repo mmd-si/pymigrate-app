@@ -54,7 +54,5 @@ async def test_health_mmdpawn_failure_returns_mmdpawn_warning(app_client, mock_m
 
     response = await app_client.get('/api/health')
 
-    # Note: status_code is currently 200 here because app/api/__init__.py
-    # only factors local_ok/remote_ok into the HTTP status, not mmdpawn_ok.
-    assert response.status_code == 200
+    assert response.status_code == 503
     assert response.json()['message'] == 'API de MMD Pawn inaccesible'
