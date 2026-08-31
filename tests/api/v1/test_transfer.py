@@ -107,17 +107,20 @@ async def test_create_returns_400_and_skips_service_call_when_row_ids_empty(app_
 
 
 async def test_create_returns_400_when_all_barcodes_invalid(app_client):
-    with patch.object(transfer_router.transfer, 'create', new=AsyncMock(return_value=None)):
+    with patch.object(transfer_router.transfer, 'create', new=AsyncMock(return_value=None)), \
+         patch.object(transfer_router, 'run_drain', new=AsyncMock()) as run_drain:
         response = await app_client.post('/api/v1/transfers/', json={'rowIds': ['BC001']})
 
     assert response.status_code == 400
     assert response.json()['detail'] == 'Todos los códigos enviados fueron inválidos.'
+    run_drain.assert_not_awaited()
 
 
 async def test_create_returns_202_with_job_id_on_success(app_client):
     app.dependency_overrides[require_session] = lambda: make_session(user_id='user-9')
 
-    with patch.object(transfer_router.transfer, 'create', new=AsyncMock(return_value='job-123')) as create:
+    with patch.object(transfer_router.transfer, 'create', new=AsyncMock(return_value='job-123')) as create, \
+         patch.object(transfer_router, 'run_drain', new=AsyncMock()) as run_drain:
         response = await app_client.post('/api/v1/transfers/', json={'rowIds': ['BC001', 'BC002']})
 
     assert response.status_code == 202
@@ -125,3 +128,4 @@ async def test_create_returns_202_with_job_id_on_success(app_client):
     args = create.call_args.args
     assert args[2] == ['BC001', 'BC002']
     assert args[3] == 'user-9'
+    run_drain.assert_awaited_once()  # drain kicked as a background task

@@ -1,4 +1,4 @@
-from sqlalchemy import select
+from sqlalchemy import Row, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.models.remote import InventoryEntry as IE, Branch as Br, PawnType as PT, CaratRating as CR
 from app.schemas.response import InventoryDetails
@@ -62,6 +62,16 @@ async def group_by_barcodes(db: AsyncSession, barcodes: list[str]) -> dict[str, 
     stmt = _stmt().where(IE.codigo.in_(barcodes))
     result = await db.execute(stmt)
     return {row.barcode: InventoryDetails.from_row(row) for row in result}
+
+
+async def source_rows(db: AsyncSession, barcodes: list[str]) -> list[Row]:
+    """Raw ERP rows for the given barcodes, with the column labels the transfer
+    pipeline's ``Normalizer`` expects. Unlike ``with_barcode_in`` this does not
+    project into ``InventoryDetails``."""
+    if not barcodes:
+        return []
+    result = await db.execute(_stmt().where(IE.codigo.in_(barcodes)))
+    return list(result.all())
 
 
 async def existing_only(db: AsyncSession, barcodes: list[str]) -> list[str]:
