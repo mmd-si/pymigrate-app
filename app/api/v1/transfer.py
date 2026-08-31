@@ -13,11 +13,16 @@ router = APIRouter(prefix='/transfers')
 
 
 @router.get('/', response_model=ListResponse[JobSummary])
-async def index(db: RequiresLocalDB, current: RequiresSession, limit: int = 20, offset: int = 0):
-    limit = clamp(limit, 0, 100)
-    offset = max(0, offset)
+async def index(db: RequiresLocalDB, current: RequiresSession, limit: int | None = None, offset: int | None = None, status: str | None = None):
+    limit = clamp(limit if limit is not None else 20, 0, 100)
+    offset = max(0, offset if offset is not None else 0)
 
-    jobs = await transfer.list_summary(db, current.user_id, limit, offset)
+    try:
+        job_status = JobStatus[status] if status is not None else None
+    except KeyError:
+        raise HTTPException(400, 'Estado de transferencia inválido.')
+
+    jobs = await transfer.list_summary(db, current.user_id, limit, offset, job_status)
 
     message = (
          'La lista de transferencias fue encontrada con éxito.'
